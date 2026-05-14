@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+import time
 
 
 class BasePage:
@@ -32,9 +33,6 @@ class BasePage:
         
         Returns:
             WebElement: Найденный элемент
-        
-        Raises:
-            TimeoutException: Если элемент не найден
         """
         wait = WebDriverWait(self.driver, timeout)
         return wait.until(EC.presence_of_element_located(locator))
@@ -132,3 +130,55 @@ class BasePage:
         """
         wait = WebDriverWait(self.driver, timeout)
         return wait.until(EC.visibility_of_element_located(locator))
+    
+    def refresh_page(self, wait_seconds: int = 2) -> None:
+        """
+        Обновление текущей страницы (перезагрузка)
+        
+        Args:
+            wait_seconds: Время ожидания после обновления в секундах
+        """
+        print(f"[INFO] Обновление страницы. Текущий URL: {self.get_current_url()}")
+        self.driver.refresh()
+        self.delay(wait_seconds)
+        print(f"[INFO] Страница обновлена. Новый URL: {self.get_current_url()}")
+    
+    def delay(self, seconds: int) -> None:
+        """
+        Функция задержки выполнения кода на определенное количество секунд
+        
+        Args:
+            seconds: Количество секунд для задержки
+        """
+        print(f"[INFO] Задержка на {seconds} секунд...")
+        time.sleep(seconds)
+        print(f"[INFO] Задержка завершена")
+    
+    def refresh_with_retry(self, max_retries: int = 3, delay_between: int = 2) -> bool:
+        """
+        Обновление страницы с повторными попытками при ошибке
+        
+        Args:
+            max_retries: Максимальное количество попыток обновления
+            delay_between: Задержка между попытками в секундах
+        
+        Returns:
+            bool: True если обновление успешно, False если все попытки не удались
+        """
+        for attempt in range(max_retries):
+            try:
+                print(f"[INFO] Попытка обновления {attempt + 1} из {max_retries}")
+                self.driver.refresh()
+                self.delay(delay_between)
+                
+                current_url = self.get_current_url()
+                if current_url and "saucedemo" in current_url:
+                    print(f"[INFO] Страница успешно обновлена. URL: {current_url}")
+                    return True
+                    
+            except Exception as error:
+                print(f"[WARN] Ошибка при обновлении: {error}")
+                self.delay(delay_between)
+        
+        print(f"[ERROR] Не удалось обновить страницу после {max_retries} попыток")
+        return False
