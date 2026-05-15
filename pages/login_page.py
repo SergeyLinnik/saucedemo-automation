@@ -3,6 +3,7 @@ Page Object для страницы логина Saucedemo
 """
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from pages.base_page import BasePage
 from config.test_data import TestData
 
@@ -111,3 +112,122 @@ class LoginPage(BasePage):
             timeout: Время ожидания в секундах
         """
         self.wait_for_element_visible(self.ERROR_CONTAINER, timeout)
+    
+    # =========================================================
+    # МЕТОДЫ ДЛЯ РАБОТЫ С КЛАВИШАМИ (ИСПРАВЛЕННЫЕ)
+    # =========================================================
+    
+    def clear_username_field(self) -> None:
+        """
+        Очистка поля логина
+        """
+        username_field = self.find_element(self.USERNAME_INPUT)
+        username_field.clear()
+        print("[INFO] Поле логина очищено методом clear()")
+    
+    def clear_password_field(self) -> None:
+        """
+        Очистка поля пароля
+        """
+        password_field = self.find_element(self.PASSWORD_INPUT)
+        password_field.clear()
+        print("[INFO] Поле пароля очищено методом clear()")
+    
+    def select_all_in_username(self) -> None:
+        """
+        Выделение текста в поле логина (Ctrl+A)
+        """
+        username_field = self.find_element(self.USERNAME_INPUT)
+        username_field.click()
+        username_field.send_keys(Keys.CONTROL, "a")
+        print("[INFO] Текст в поле логина выделен")
+    
+    def select_all_in_password(self) -> None:
+        """
+        Выделение текста в поле пароля (Ctrl+A)
+        """
+        password_field = self.find_element(self.PASSWORD_INPUT)
+        password_field.click()
+        password_field.send_keys(Keys.CONTROL, "a")
+        print("[INFO] Текст в поле пароля выделен")
+    
+    def delete_with_keys(self, locator: tuple) -> None:
+        """
+        Удаление текста с помощью клавиш Delete
+        
+        Args:
+            locator: Локатор элемента
+        """
+        element = self.find_element(locator)
+        element.click()
+        element.send_keys(Keys.CONTROL, "a")
+        element.send_keys(Keys.DELETE)
+        print("[INFO] Текст удален с помощью клавиш")
+    
+    def press_tab(self) -> None:
+        """
+        Нажатие клавиши Tab
+        """
+        active_element = self.driver.switch_to.active_element
+        active_element.send_keys(Keys.TAB)
+        print("[INFO] Нажата клавиша Tab")
+    
+    def press_enter(self) -> None:
+        """
+        Нажатие клавиши Enter
+        """
+        active_element = self.driver.switch_to.active_element
+        active_element.send_keys(Keys.ENTER)
+        print("[INFO] Нажата клавиша Enter")
+    
+    def login_with_enter(self, username: str, password: str) -> None:
+        """
+        Авторизация с помощью клавиши Enter
+        
+        Args:
+            username: Логин
+            password: Пароль
+        """
+        self.enter_username(username)
+        self.press_tab()
+        self.enter_password(password)
+        self.press_enter()
+        print("[INFO] Форма отправлена через Enter")
+    
+    def get_username_value(self) -> str:
+        """
+        Получение значения поля логина
+        
+        Returns:
+            str: Значение поля логина
+        """
+        element = self.find_element(self.USERNAME_INPUT)
+        return element.get_attribute("value")
+    
+    def get_password_value(self) -> str:
+        """
+        Получение значения поля пароля
+        
+        Returns:
+            str: Значение поля пароля
+        """
+        element = self.find_element(self.PASSWORD_INPUT)
+        return element.get_attribute("value")
+    
+    def is_username_empty(self) -> bool:
+        """
+        Проверка, что поле логина пустое
+        
+        Returns:
+            bool: True если поле пустое
+        """
+        return self.get_username_value() == ""
+    
+    def is_password_empty(self) -> bool:
+        """
+        Проверка, что поле пароля пустое
+        
+        Returns:
+            bool: True если поле пустое
+        """
+        return self.get_password_value() == ""

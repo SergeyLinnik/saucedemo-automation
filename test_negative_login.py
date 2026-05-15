@@ -143,6 +143,32 @@ class TestNegativeLogin:
         print("Сообщение об ошибке закрыто")
         
         print("[Тест 4] ПРОЙДЕН")
+    def test_refresh_clears_error(self, driver):
+        """
+        Тест 5: Обновление страницы очищает сообщение об ошибке
+        """
+        print("\n[Тест 5] Обновление страницы очищает ошибку")
+        
+        # Выполняем вход с неверным паролем
+        self.login_page.login(TestData.VALID_USERNAME, TestData.INVALID_PASSWORD)
+        
+        # Проверяем, что ошибка отображается
+        assert self.login_page.is_error_displayed(), "Ошибка не отображается"
+        print("Ошибка отображается")
+        
+        # Используем метод refresh_page для обновления
+        self.login_page.refresh_page(wait_seconds=2)
+        
+        # Проверяем, что ошибка исчезла
+        assert not self.login_page.is_error_displayed(), "Ошибка все еще отображается"
+        print("Ошибка исчезла после обновления")
+        
+        # Проверяем, что поля очистились
+        username_field = self.login_page.find_element(self.login_page.USERNAME_INPUT)
+        assert username_field.get_attribute("value") == "", "Поле логина не очистилось"
+        print("Поле логина очистилось")
+        
+        print("[Тест 5] ПРОЙДЕН")
 
 
 if __name__ == "__main__":
