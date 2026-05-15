@@ -3,101 +3,52 @@
 """
 
 import time
-from typing import Union
+import os
+from datetime import datetime
+from selenium.webdriver.remote.webdriver import WebDriver
 
 
-def wait(seconds: Union[int, float] = 1) -> None:
-    """
-    Функция задержки выполнения кода на определенное количество секунд
-    
-    Args:
-        seconds: Количество секунд для задержки (может быть int или float)
-    
-    Примеры:
-        wait(1)     # Пауза на 1 секунду
-        wait(2.5)   # Пауза на 2.5 секунды
-        wait(0.5)   # Пауза на 0.5 секунды
-    """
-    print(f"[INFO] Задержка на {seconds} секунд...")
+def wait(seconds: int = 1) -> None:
+    """Задержка выполнения кода"""
     time.sleep(seconds)
-    print("[INFO] Задержка завершена")
 
 
-def is_url_contains(driver, expected_part: str) -> bool:
+def get_current_datetime() -> str:
     """
-    Проверка, что URL содержит ожидаемую часть
-    
-    Args:
-        driver: Экземпляр веб-драйвера
-        expected_part: Ожидаемая часть URL
+    Получение текущей даты и времени в формате для имен файлов
     
     Returns:
-        bool: True если URL содержит часть, иначе False
+        str: Строка с текущей датой и временем (ГГГГ-ММ-ДД_ЧЧ-ММ-СС)
     """
-    return expected_part in driver.current_url
+    now = datetime.now()
+    formatted = now.strftime("%Y-%m-%d_%H-%M-%S")
+    return formatted
 
 
-# =========================================================
-# НОВЫЕ ФУНКЦИИ (ДОБАВЛЯЕМ ИХ В КОНЕЦ ФАЙЛА)
-# =========================================================
-
-def wait_short() -> None:
+def take_screenshot(driver: WebDriver, name: str = None) -> str:
     """
-    Короткая задержка (1 секунда)
-    Используется для быстрых пауз между действиями
-    """
-    wait(1)
-
-
-def wait_medium() -> None:
-    """
-    Средняя задержка (3 секунды)
-    Используется для ожидания загрузки элементов
-    """
-    wait(3)
-
-
-def wait_long() -> None:
-    """
-    Длинная задержка (5 секунд)
-    Используется для ожидания анимаций или медленных операций
-    """
-    wait(5)
-
-
-def refresh_page(driver) -> None:
-    """
-    Обновление текущей страницы
+    Создание скриншота страницы с автоматическим именем по дате/времени
     
     Args:
         driver: Экземпляр веб-драйвера
-    """
-    print(f"[INFO] Обновление страницы. Текущий URL: {driver.current_url}")
-    driver.refresh()
-    wait(2)
-    print(f"[INFO] Страница обновлена. Новый URL: {driver.current_url}")
-
-
-def safe_refresh(driver, max_attempts: int = 3) -> bool:
-    """
-    Безопасное обновление страницы с повторными попытками
-    
-    Args:
-        driver: Экземпляр веб-драйвера
-        max_attempts: Максимальное количество попыток
+        name: Пользовательское имя файла (опционально)
     
     Returns:
-        bool: True если обновление успешно
+        str: Путь к сохраненному скриншоту
     """
-    for attempt in range(max_attempts):
-        try:
-            print(f"[INFO] Попытка обновления {attempt + 1} из {max_attempts}")
-            driver.refresh()
-            wait(2)
-            return True
-        except Exception as error:
-            print(f"[WARN] Ошибка при обновлении: {error}")
-            wait(2)
+    if not os.path.exists("screenshots"):
+        os.makedirs("screenshots")
+        print("[INFO] Создана папка для скриншотов: screenshots")
     
-    print(f"[ERROR] Не удалось обновить страницу после {max_attempts} попыток")
-    return False
+    timestamp = get_current_datetime()
+    
+    if name:
+        filename = f"{name}_{timestamp}.png"
+    else:
+        filename = f"{timestamp}.png"
+    
+    filepath = os.path.join("screenshots", filename)
+    driver.save_screenshot(filepath)
+    print(f"[INFO] Скриншот сохранен: {filepath}")
+    
+    return filepath
