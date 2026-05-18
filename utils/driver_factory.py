@@ -1,30 +1,20 @@
 """
 Фабрика для создания веб-драйверов
-Использует локальные драйверы для стабильности
 """
 
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from webdriver_manager.firefox import GeckoDriverManager
 import os
 
 
 class DriverFactory:
     """Класс для создания и настройки веб-драйверов"""
     
-    # Путь к локальному драйверу Firefox (GeckoDriver)
-    # Если файл не найден, будет использован автоматический менеджер
     @staticmethod
     def get_driver(headless: bool = False) -> webdriver.Firefox:
-        """
-        Создание драйвера Firefox с использованием локального драйвера
-        
-        Args:
-            headless: Запускать ли браузер в headless режиме
-        
-        Returns:
-            webdriver.Firefox: Настроенный экземпляр драйвера
-        """
+        """Создание драйвера Firefox"""
         firefox_options = FirefoxOptions()
         
         if headless:
@@ -43,7 +33,6 @@ class DriverFactory:
             driver = webdriver.Firefox(service=service, options=firefox_options)
         else:
             print("[INFO] Локальный драйвер не найден, используется webdriver-manager")
-            from webdriver_manager.firefox import GeckoDriverManager
             service = Service(GeckoDriverManager().install())
             driver = webdriver.Firefox(service=service, options=firefox_options)
         
@@ -51,11 +40,6 @@ class DriverFactory:
     
     @staticmethod
     def quit_driver(driver: webdriver.Firefox) -> None:
-        """
-        Закрытие драйвера
-        
-        Args:
-            driver: Экземпляр веб-драйвера
-        """
+        """Закрытие драйвера"""
         if driver:
             driver.quit()

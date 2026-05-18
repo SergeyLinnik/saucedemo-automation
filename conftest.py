@@ -8,9 +8,7 @@ from utils.driver_factory import DriverFactory
 
 @pytest.fixture
 def driver():
-    """
-    Фикстура для создания и закрытия драйвера
-    """
+    """Фикстура для создания и закрытия драйвера"""
     driver = DriverFactory.get_driver(headless=False)
     yield driver
     DriverFactory.quit_driver(driver)
@@ -18,9 +16,7 @@ def driver():
 
 @pytest.fixture
 def driver_headless():
-    """
-    Фикстура для создания драйвера в headless режиме
-    """
+    """Фикстура для создания драйвера в headless режиме"""
     driver = DriverFactory.get_driver(headless=True)
     yield driver
     DriverFactory.quit_driver(driver)
@@ -28,9 +24,7 @@ def driver_headless():
 
 @pytest.fixture
 def login_page(driver):
-    """
-    Фикстура для создания страницы логина
-    """
+    """Фикстура для создания страницы логина"""
     from pages.login_page import LoginPage
     page = LoginPage(driver)
     page.open()
