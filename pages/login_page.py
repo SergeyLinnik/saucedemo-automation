@@ -132,3 +132,97 @@ class LoginPage(BasePage):
         """
         from utils.helpers import take_screenshot
         return take_screenshot(self.driver, name)
+    
+    # =========================================================
+    # МЕТОДЫ ДЛЯ РАБОТЫ С КАТАЛОГОМ ТОВАРОВ
+    # =========================================================
+    
+    def get_all_add_to_cart_buttons(self) -> list:
+        """
+        Получение всех кнопок "Add to cart" на странице каталога
+        
+        Returns:
+            list: Список элементов кнопок добавления в корзину
+        """
+        buttons = self.driver.find_elements(By.XPATH, "//button[contains(@id, 'add-to-cart')]")
+        print(f"[INFO] Найдено кнопок 'Add to cart': {len(buttons)}")
+        return buttons
+    
+    def add_all_items_to_cart(self) -> None:
+        """
+        Добавление всех товаров в корзину
+        """
+        print("[INFO] Начинаем добавление всех товаров в корзину...")
+        buttons = self.get_all_add_to_cart_buttons()
+        
+        for i, button in enumerate(buttons, 1):
+            button.click()
+            print(f"[INFO] Товар {i} добавлен в корзину")
+        
+        print(f"[INFO] Все {len(buttons)} товаров добавлены в корзину")
+    
+    def go_to_cart(self) -> None:
+        """
+        Переход в корзину
+        """
+        cart_icon = self.driver.find_element(By.XPATH, "//div[@id='shopping_cart_container']/a")
+        cart_icon.click()
+        print("[INFO] Переход в корзину выполнен")
+    
+    def get_cart_items(self) -> list:
+        """
+        Получение всех элементов в корзине
+        
+        Returns:
+            list: Список элементов товаров в корзине
+        """
+        items = self.driver.find_elements(By.XPATH, "//div[@class='cart_item']")
+        print(f"[INFO] В корзине {len(items)} товаров")
+        return items
+    
+    def scroll_to_last_cart_item(self) -> None:
+        """
+        Скроллинг страницы до последнего элемента в корзине
+        Используется прокрутка с помощью JavaScript
+        """
+        print("[INFO] Скроллинг до последнего элемента в корзине...")
+        
+        cart_items = self.get_cart_items()
+        
+        if len(cart_items) == 0:
+            print("[INFO] Корзина пуста, скроллинг не требуется")
+            return
+        
+        last_item = cart_items[-1]
+        
+        # Прокрутка с помощью JavaScript (работает всегда)
+        self.driver.execute_script("arguments[0].scrollIntoView(true);", last_item)
+        print(f"[INFO] Выполнен скроллинг до последнего элемента корзины (элемент {len(cart_items)})")
+        
+        import time
+        time.sleep(0.5)
+    
+    def scroll_to_element_js(self, element) -> None:
+        """
+        Скроллинг страницы до указанного элемента с помощью JavaScript
+        
+        Args:
+            element: Веб-элемент, до которого нужно прокрутить страницу
+        """
+        self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+        print("[INFO] Выполнен скроллинг до указанного элемента")
+    
+    def get_cart_item_count(self) -> int:
+        """
+        Получение количества товаров в корзине
+        
+        Returns:
+            int: Количество товаров в корзине
+        """
+        cart_badge = self.driver.find_elements(By.XPATH, "//span[@class='shopping_cart_badge']")
+        if cart_badge:
+            count = int(cart_badge[0].text)
+            print(f"[INFO] В корзине товаров: {count}")
+            return count
+        print("[INFO] Корзина пуста")
+        return 0
