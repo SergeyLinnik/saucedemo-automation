@@ -4,7 +4,9 @@
 
 import pytest
 import time
+from typing import List, Tuple
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webdriver import WebDriver
 from pages.login_page import LoginPage
 from config.test_data import TestData
 
@@ -21,14 +23,22 @@ class TestSelectItemsAndCheckout:
     """
     
     @pytest.fixture(autouse=True)
-    def setup(self, driver):
-        """Настройка перед тестом"""
-        self.login_page = LoginPage(driver)
+    def setup(self, driver: WebDriver) -> None:
+        """
+        Настройка перед тестом
+        
+        Args:
+            driver: Экземпляр веб-драйвера
+        """
+        self.login_page: LoginPage = LoginPage(driver)
         self.login_page.open()
     
-    def test_select_two_items_and_checkout(self, driver):
+    def test_select_two_items_and_checkout(self, driver: WebDriver) -> None:
         """
         Тест: Выбор 2 товаров, проверка названий и цен, сверка суммы
+        
+        Args:
+            driver: Экземпляр веб-драйвера
         """
         print("\n" + "=" * 70)
         print("ТЕСТ: ВЫБОР ТОВАРОВ, ПРОВЕРКА НАЗВАНИЙ И ЦЕН, СВЕРКА СУММЫ")
@@ -41,7 +51,8 @@ class TestSelectItemsAndCheckout:
         self.login_page.login(TestData.VALID_USERNAME, TestData.VALID_PASSWORD)
         time.sleep(3)
         
-        current_url = driver.current_url
+        # Проверка успешной авторизации по URL
+        current_url: str = driver.current_url
         print(f"Текущий URL после авторизации: {current_url}")
         assert "inventory.html" in current_url, "Авторизация не выполнена"
         print("Авторизация успешно выполнена")
@@ -52,94 +63,170 @@ class TestSelectItemsAndCheckout:
         print("\n[Шаг 2] Выбор 2 товаров и сохранение названий и цен...")
         time.sleep(2)
         
-        # ВАЖНО: ДВА СЛЕША // ДЛЯ ПОИСКА В ЛЮБОМ МЕСТЕ
-        items_names = driver.find_elements(By.CLASS_NAME, "inventory_item_name")
-        items_prices = driver.find_elements(By.CLASS_NAME, "inventory_item_price")
+        # Получаем список всех названий и цен товаров
+        items_names: List = driver.find_elements(By.CLASS_NAME, "inventory_item_name")
+        items_prices: List = driver.find_elements(By.CLASS_NAME, "inventory_item_price")
         
         print(f"Найдено товаров: {len(items_names)}")
+        
+        # Проверяем, что товары есть
         assert len(items_names) >= 2, f"Найдено только {len(items_names)} товаров"
         
-        # Сохраняем данные
-        item1_name = items_names[0].text
-        item1_price = float(items_prices[0].text.replace("$", ""))
-        item2_name = items_names[1].text
-        item2_price = float(items_prices[1].text.replace("$", ""))
+        # Сохраняем данные первого товара (индекс 0)
+        item_1_name: str = items_names[0].text
+        item_1_price_text: str = items_prices[0].text.replace("$", "")
+        item_1_price: float = float(item_1_price_text)
         
-        print(f"Товар 1: {item1_name} - ${item1_price}")
-        print(f"Товар 2: {item2_name} - ${item2_price}")
+        # Сохраняем данные второго товара (индекс 1)
+        item_2_name: str = items_names[1].text
+        item_2_price_text: str = items_prices[1].text.replace("$", "")
+        item_2_price: float = float(item_2_price_text)
+        
+        # Список выбранных товаров для удобства
+        selected_items: List[dict] = [
+            {"name": item_1_name, "price": item_1_price},
+            {"name": item_2_name, "price": item_2_price}
+        ]
+        
+        print("\n--- СОХРАНЕННЫЕ ДАННЫЕ ТОВАРОВ ---")
+        for i, item in enumerate(selected_items, 1):
+            print(f"Товар {i}: {item['name']} - ${item['price']}")
         
         # =========================================================
         # ШАГ 3: ДОБАВЛЕНИЕ ТОВАРОВ В КОРЗИНУ
         # =========================================================
         print("\n[Шаг 3] Добавление товаров в корзину...")
         
-        add_buttons = driver.find_elements(By.CSS_SELECTOR, "button.btn_inventory")
+        # Находим все кнопки "Add to cart"
+        add_buttons: List = driver.find_elements(By.CSS_SELECTOR, "button.btn_inventory")
+        
+        # Добавляем первый товар
         add_buttons[0].click()
-        print("Товар 1 добавлен")
+        print("Товар 1 добавлен в корзину")
         time.sleep(1)
+        
+        # Добавляем второй товар
         add_buttons[1].click()
-        print("Товар 2 добавлен")
+        print("Товар 2 добавлен в корзину")
         time.sleep(1)
         
         # =========================================================
         # ШАГ 4: ПЕРЕХОД В КОРЗИНУ И ПРОВЕРКА ДАННЫХ
         # =========================================================
         print("\n[Шаг 4] Переход в корзину...")
-        driver.find_element(By.CLASS_NAME, "shopping_cart_link").click()
+        
+        # Переход на страницу корзины
+        cart_link: WebDriver = driver.find_element(By.CLASS_NAME, "shopping_cart_link")
+        cart_link.click()
         time.sleep(2)
         
-        cart_names = driver.find_elements(By.CLASS_NAME, "inventory_item_name")
-        cart_prices = driver.find_elements(By.CLASS_NAME, "inventory_item_price")
+        # Получаем товары в корзине
+        cart_items_names: List = driver.find_elements(By.CLASS_NAME, "inventory_item_name")
+        cart_items_prices: List = driver.find_elements(By.CLASS_NAME, "inventory_item_price")
         
-        assert len(cart_names) == 2, f"В корзине {len(cart_names)} товаров"
+        # Проверяем количество товаров в корзине
+        cart_items_count: int = len(cart_items_names)
+        print(f"В корзине товаров: {cart_items_count}")
+        assert cart_items_count == 2, f"В корзине {cart_items_count} товаров, ожидалось 2"
         
-        # Сверка названий и цен
-        calc_sum = 0
-        for i, expected_name in enumerate([item1_name, item2_name]):
-            assert cart_names[i].text == expected_name, f"Название {i+1} не совпадает"
-            price = float(cart_prices[i].text.replace("$", ""))
-            calc_sum += price
+        # Проверка названий товаров в корзине
+        print("\n--- ПРОВЕРКА НАЗВАНИЙ ТОВАРОВ В КОРЗИНЕ ---")
+        for i, expected_item in enumerate(selected_items):
+            actual_name: str = cart_items_names[i].text
+            assert actual_name == expected_item["name"], \
+                f"Название товара {i + 1} не совпадает. Ожидалось: {expected_item['name']}, Получено: {actual_name}"
+            print(f"Товар {i + 1}: название совпадает - {actual_name}")
         
-        print(f"Проверка пройдена. Сумма: ${calc_sum}")
+        # Проверка цен товаров в корзине и расчет суммы
+        print("\n--- ПРОВЕРКА ЦЕН ТОВАРОВ В КОРЗИНЕ ---")
+        calculated_sum: float = 0.0
+        for i, expected_item in enumerate(selected_items):
+            price_text: str = cart_items_prices[i].text.replace("$", "")
+            actual_price: float = float(price_text)
+            assert actual_price == expected_item["price"], \
+                f"Цена товара {i + 1} не совпадает. Ожидалось: ${expected_item['price']}, Получено: ${actual_price}"
+            print(f"Товар {i + 1}: цена совпадает - ${actual_price}")
+            calculated_sum += actual_price
+        
+        print(f"\nРассчитанная сумма товаров: ${calculated_sum}")
         
         # =========================================================
-        # ШАГ 5: ОФОРМЛЕНИЕ ЗАКАЗА
+        # ШАГ 5: ПРОЦЕСС ОФОРМЛЕНИЯ ЗАКАЗА (CHECKOUT)
         # =========================================================
-        print("\n[Шаг 5] Оформление заказа...")
-        driver.find_element(By.ID, "checkout").click()
+        print("\n[Шаг 5] Процесс оформления заказа...")
+        
+        # Нажатие кнопки Checkout
+        checkout_button: WebDriver = driver.find_element(By.ID, "checkout")
+        checkout_button.click()
+        print("Нажата кнопка Checkout")
         time.sleep(1)
         
-        driver.find_element(By.ID, "first-name").send_keys("Test")
-        driver.find_element(By.ID, "last-name").send_keys("User")
-        driver.find_element(By.ID, "postal-code").send_keys("12345")
+        # Заполнение информации о покупателе
+        first_name_field: WebDriver = driver.find_element(By.ID, "first-name")
+        last_name_field: WebDriver = driver.find_element(By.ID, "last-name")
+        postal_code_field: WebDriver = driver.find_element(By.ID, "postal-code")
+        
+        first_name_field.send_keys("Test")
+        last_name_field.send_keys("User")
+        postal_code_field.send_keys("12345")
+        print("Заполнены данные покупателя: Test User, 12345")
         time.sleep(1)
         
-        driver.find_element(By.ID, "continue").click()
+        # Нажатие кнопки Continue
+        continue_button: WebDriver = driver.find_element(By.ID, "continue")
+        continue_button.click()
+        print("Нажата кнопка Continue")
         time.sleep(2)
         
         # =========================================================
-        # ШАГ 6: ПРОВЕРКА СУММЫ
+        # ШАГ 6: ПРОВЕРКА СУММЫ НА СТРАНИЦЕ ОПЛАТЫ
         # =========================================================
-        total_text = driver.find_element(By.CLASS_NAME, "summary_subtotal_label").text
-        total_sum = float(total_text.replace("Item total: $", ""))
+        print("\n[Шаг 6] Проверка суммы на странице оплаты...")
         
-        assert calc_sum == total_sum, f"Суммы не совпадают: {calc_sum} vs {total_sum}"
-        print(f"Сумма совпадает: ${total_sum}")
+        # Получение общей суммы из системы
+        total_element: WebDriver = driver.find_element(By.CLASS_NAME, "summary_subtotal_label")
+        total_text: str = total_element.text.replace("Item total: $", "")
+        total_sum: float = float(total_text)
+        print(f"Общая сумма в системе: ${total_sum}")
+        
+        # Сверка рассчитанной суммы с суммой в системе
+        assert calculated_sum == total_sum, \
+            f"Сумма не совпадает! Рассчитано: ${calculated_sum}, В системе: ${total_sum}"
+        print(f"Сумма совпадает: рассчитано ${calculated_sum}, в системе ${total_sum}")
         
         # =========================================================
-        # ШАГ 7: ЗАВЕРШЕНИЕ
+        # ШАГ 7: ЗАВЕРШЕНИЕ ПОКУПКИ
         # =========================================================
         print("\n[Шаг 7] Завершение покупки...")
-        driver.find_element(By.ID, "finish").click()
+        
+        # Нажатие кнопки Finish
+        finish_button: WebDriver = driver.find_element(By.ID, "finish")
+        finish_button.click()
+        print("Нажата кнопка Finish")
         time.sleep(2)
         
-        message = driver.find_element(By.CLASS_NAME, "complete-header").text
-        assert message == "Thank you for your order!", f"Сообщение: {message}"
-        print(f"Успех! {message}")
+        # Проверка успешного завершения заказа
+        complete_message: WebDriver = driver.find_element(By.CLASS_NAME, "complete-header")
+        message_text: str = complete_message.text
+        assert message_text == "Thank you for your order!", \
+            f"Сообщение не совпадает: {message_text}"
+        print(f"Покупка успешно завершена! Сообщение: {message_text}")
         
+        # =========================================================
+        # ВЫВОД РЕЗУЛЬТАТА
+        # =========================================================
         print("\n" + "=" * 70)
-        print("ТЕСТ ПРОЙДЕН УСПЕШНО")
+        print("РЕЗУЛЬТАТ ТЕСТА:")
         print("=" * 70)
+        print("Авторизация на сайте - ВЫПОЛНЕНО")
+        print(f"Выбраны товары: {item_1_name} (${item_1_price}), {item_2_name} (${item_2_price})")
+        print("Названия и цены сохранены в переменные")
+        print("Названия товаров в корзине совпадают с сохраненными")
+        print("Цены товаров в корзине совпадают с сохраненными")
+        print(f"Рассчитанная сумма (${calculated_sum}) совпадает с суммой в системе (${total_sum})")
+        print("Процесс оплаты пройден успешно")
+        print("=" * 70)
+        print("[ТЕСТ] ПРОЙДЕН")
 
 
 if __name__ == "__main__":
