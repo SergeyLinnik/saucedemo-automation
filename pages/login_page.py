@@ -473,3 +473,34 @@ class LoginPage(BasePage):
         """
         print("[INFO] Переход вперед на страницу корзины...")
         self.go_forward()
+    # =========================================================
+    # МЕТОДЫ ДЛЯ НАВИГАЦИИ (BACK И FORWARD)
+    # =========================================================
+    
+    def go_back(self) -> None:
+        """
+        Возврат на предыдущую страницу (назад)
+        Используется метод driver.back() для имитации нажатия кнопки "Назад" в браузере
+        
+        Returns:
+            None
+        """
+        print(f"[INFO] Переход на предыдущую страницу. Текущий URL: {self.driver.current_url}")
+        self.driver.back()
+        import time
+        time.sleep(1)
+        print(f"[INFO] Переход выполнен. Текущий URL: {self.driver.current_url}")
+    
+    def go_forward(self) -> None:
+        """
+        Переход на следующую страницу (вперед)
+        Используется метод driver.forward() для имитации нажатия кнопки "Вперед" в браузере
+        
+        Returns:
+            None
+        """
+        print(f"[INFO] Переход на следующую страницу. Текущий URL: {self.driver.current_url}")
+        self.driver.forward()
+        import time
+        time.sleep(1)
+        print(f"[INFO] Переход выполнен. Текущий URL: {self.driver.current_url}")
