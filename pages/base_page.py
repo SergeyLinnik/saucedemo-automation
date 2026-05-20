@@ -3,6 +3,7 @@
 Содержит общие методы для всех страниц
 """
 
+from typing import Tuple
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
@@ -13,7 +14,7 @@ import time
 class BasePage:
     """Базовый класс для всех Page Object"""
     
-    def __init__(self, driver):
+    def __init__(self, driver) -> None:
         """
         Инициализация базовой страницы
         
@@ -23,29 +24,29 @@ class BasePage:
         self.driver = driver
         self.wait = WebDriverWait(driver, 10)
     
-    def find_element(self, locator: tuple, timeout: int = 10) -> WebElement:
+    def find_element(self, locator: Tuple[str, str], timeout: int = 10) -> WebElement:
         """Поиск элемента с ожиданием"""
         wait = WebDriverWait(self.driver, timeout)
         return wait.until(EC.presence_of_element_located(locator))
     
-    def click_element(self, locator: tuple, timeout: int = 10) -> None:
+    def click_element(self, locator: Tuple[str, str], timeout: int = 10) -> None:
         """Клик по элементу с ожиданием"""
         wait = WebDriverWait(self.driver, timeout)
         element = wait.until(EC.element_to_be_clickable(locator))
         element.click()
     
-    def enter_text(self, locator: tuple, text: str, timeout: int = 10) -> None:
+    def enter_text(self, locator: Tuple[str, str], text: str, timeout: int = 10) -> None:
         """Ввод текста в поле"""
         element = self.find_element(locator, timeout)
         element.clear()
         element.send_keys(text)
     
-    def get_text(self, locator: tuple, timeout: int = 10) -> str:
+    def get_text(self, locator: Tuple[str, str], timeout: int = 10) -> str:
         """Получение текста элемента"""
         element = self.find_element(locator, timeout)
         return element.text
     
-    def is_element_displayed(self, locator: tuple, timeout: int = 5) -> bool:
+    def is_element_displayed(self, locator: Tuple[str, str], timeout: int = 5) -> bool:
         """Проверка отображения элемента"""
         try:
             wait = WebDriverWait(self.driver, timeout)
@@ -63,7 +64,7 @@ class BasePage:
         wait = WebDriverWait(self.driver, timeout)
         return wait.until(EC.url_contains(text))
     
-    def wait_for_element_visible(self, locator: tuple, timeout: int = 10) -> WebElement:
+    def wait_for_element_visible(self, locator: Tuple[str, str], timeout: int = 10) -> WebElement:
         """Ожидание видимости элемента"""
         wait = WebDriverWait(self.driver, timeout)
         return wait.until(EC.visibility_of_element_located(locator))
@@ -98,12 +99,12 @@ class BasePage:
         print(f"[ERROR] Не удалось обновить страницу после {max_retries} попыток")
         return False
     
-    def clear_field(self, locator: tuple) -> None:
+    def clear_field(self, locator: Tuple[str, str]) -> None:
         """Очистка поля"""
         element = self.find_element(locator)
         element.clear()
     
-    def get_element_value(self, locator: tuple) -> str:
+    def get_element_value(self, locator: Tuple[str, str]) -> str:
         """Получение значения поля"""
         element = self.find_element(locator)
         return element.get_attribute("value")
